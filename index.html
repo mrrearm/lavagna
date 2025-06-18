@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lavagna Digitale</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .title {
+            text-align: center;
+            color: #333;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px 15px;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            font-weight: 500;
+            color: #444;
+            white-space: nowrap;
+        }
+
+        input[type="color"] {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+        }
+
+        input[type="color"]:hover {
+            transform: scale(1.1);
+        }
+
+        input[type="range"] {
+            width: 80px;
+            accent-color: #667eea;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-clear {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-clear:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-eraser {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .btn-eraser:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-eraser.active {
+            background: linear-gradient(45deg, #ff9500, #ff7b00);
+            box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3);
+        }
+
+        .btn-download {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .canvas-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #whiteboard {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: crosshair;
+            display: block;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        #whiteboard:hover {
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .size-display {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+
+            .title {
+                font-size: 1.4rem;
+                margin-bottom: 10px;
+            }
+
+            .controls {
+                gap: 10px;
+            }
+
+            .control-group {
+                padding: 8px 12px;
+                gap: 8px;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+
+            input[type="color"] {
+                width: 35px;
+                height: 35px;
+            }
+
+            input[type="range"] {
+                width: 60px;
+            }
+
+            .canvas-container {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .control-group {
+                justify-content: center;
+            }
+
+            .title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">🎨 Lavagna Digitale</h1>
+        <div class="controls">
+            <div class="control-group">
+                <label>Colore:</label>
+                <input type="color" id="colorPicker" value="#000000">
+            </div>
+            
+            <div class="control-group">
+                <label>Spessore:</label>
+                <input type="range" id="brushSize" min="1" max="50" value="3">
+                <span class="size-display" id="sizeDisplay">3px</span>
+            </div>
+            
+            <div class="control-group">
+                <button class="btn btn-eraser" id="eraserBtn">Gomma</button>
+                <button class="btn btn-download" id="downloadBtn">📥 Scarica JPG</button>
+                <button class="btn btn-clear" id="clearBtn">🗑️ Cancella</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="whiteboard"></canvas>
+    </div>
+
+    <script>
+        class DigitalWhiteboard {
+            constructor() {
+                this.canvas = document.getElementById('whiteboard');
+                this.ctx = this.canvas.getContext('2d');
+                this.isDrawing = false;
+                this.isErasing = false;
+                this.currentColor = '#000000';
+                this.currentSize = 3;
+                
+                this.initializeCanvas();
+                this.setupEventListeners();
+                this.setupControls();
+                
+                // Resize canvas on window resize
+                window.addEventListener('resize', () => this.resizeCanvas());
+            }
+
+            initializeCanvas() {
+                this.resizeCanvas();
+                this.ctx.lineCap = 'round';
+                this.ctx.lineJoin = 'round';
+                this.ctx.imageSmoothingEnabled = true;
+            }
+
+            resizeCanvas() {
+                const container = this.canvas.parentElement;
+                const rect = container.getBoundingClientRect();
+                
+                // Calculate canvas size maintaining aspect ratio
+                const maxWidth = rect.width - 40; // padding
+                const maxHeight = rect.height - 40;
+                
+                // Set canvas size for mobile/desktop
+                if (window.innerWidth <= 768) {
+                    this.canvas.width = Math.min(maxWidth, window.innerWidth - 30);
+                    this.canvas.height = Math.min(maxHeight, window.innerHeight * 0.6);
+                } else {
+                    this.canvas.width = Math.min(maxWidth, 800);
+                    this.canvas.height = Math.min(maxHeight, 600);
+                }
+                
+                // Reinitialize context after resize
+                this.ctx.lineCap = 'round';
+                this.ctx.lineJoin = 'round';
+                this.ctx.imageSmoothingEnabled = true;
+            }
+
+            setupEventListeners() {
+                // Mouse events
+                this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
+                this.canvas.addEventListener('mousemove', (e) => this.draw(e));
+                this.canvas.addEventListener('mouseup', () => this.stopDrawing());
+                this.canvas.addEventListener('mouseout', () => this.stopDrawing());
+
+                // Touch events for mobile
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const mouseEvent = new MouseEvent('mousedown', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    this.canvas.dispatchEvent(mouseEvent);
+                });
+
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const mouseEvent = new MouseEvent('mousemove', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    this.canvas.dispatchEvent(mouseEvent);
+                });
+
+                this.canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    const mouseEvent = new MouseEvent('mouseup', {});
+                    this.canvas.dispatchEvent(mouseEvent);
+                });
+            }
+
+            setupControls() {
+                const colorPicker = document.getElementById('colorPicker');
+                const brushSize = document.getElementById('brushSize');
+                const sizeDisplay = document.getElementById('sizeDisplay');
+                const eraserBtn = document.getElementById('eraserBtn');
+                const downloadBtn = document.getElementById('downloadBtn');
+                const clearBtn = document.getElementById('clearBtn');
+
+                colorPicker.addEventListener('change', (e) => {
+                    this.currentColor = e.target.value;
+                    if (this.isErasing) {
+                        this.toggleEraser();
+                    }
+                });
+
+                brushSize.addEventListener('input', (e) => {
+                    this.currentSize = e.target.value;
+                    sizeDisplay.textContent = `${e.target.value}px`;
+                });
+
+                eraserBtn.addEventListener('click', () => this.toggleEraser());
+                downloadBtn.addEventListener('click', () => this.downloadCanvas());
+                clearBtn.addEventListener('click', () => this.clearCanvas());
+            }
+
+            getMousePos(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const scaleX = this.canvas.width / rect.width;
+                const scaleY = this.canvas.height / rect.height;
+                
+                return {
+                    x: (e.clientX - rect.left) * scaleX,
+                    y: (e.clientY - rect.top) * scaleY
+                };
+            }
+
+            startDrawing(e) {
+                this.isDrawing = true;
+                const pos = this.getMousePos(e);
+                this.ctx.beginPath();
+                this.ctx.moveTo(pos.x, pos.y);
+            }
+
+            draw(e) {
+                if (!this.isDrawing) return;
+
+                const pos = this.getMousePos(e);
+                
+                if (this.isErasing) {
+                    this.ctx.globalCompositeOperation = 'destination-out';
+                    this.ctx.lineWidth = this.currentSize * 2;
+                } else {
+                    this.ctx.globalCompositeOperation = 'source-over';
+                    this.ctx.strokeStyle = this.currentColor;
+                    this.ctx.lineWidth = this.currentSize;
+                }
+
+                this.ctx.lineTo(pos.x, pos.y);
+                this.ctx.stroke();
+                this.ctx.beginPath();
+                this.ctx.moveTo(pos.x, pos.y);
+            }
+
+            stopDrawing() {
+                if (this.isDrawing) {
+                    this.isDrawing = false;
+                    this.ctx.beginPath();
+                }
+            }
+
+            toggleEraser() {
+                this.isErasing = !this.isErasing;
+                const eraserBtn = document.getElementById('eraserBtn');
+                
+                if (this.isErasing) {
+                    eraserBtn.classList.add('active');
+                    eraserBtn.textContent = 'Disegna';
+                    this.canvas.style.cursor = 'grab';
+                } else {
+                    eraserBtn.classList.remove('active');
+                    eraserBtn.textContent = 'Gomma';
+                    this.canvas.style.cursor = 'crosshair';
+                }
+            }
+
+            clearCanvas() {
+                if (confirm('Vuoi davvero cancellare tutto il disegno?')) {
+                    // Reset composite operation to default
+                    this.ctx.globalCompositeOperation = 'source-over';
+                    
+                    // Clear the entire canvas
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    
+                    // Reset eraser mode if active
+                    if (this.isErasing) {
+                        this.toggleEraser();
+                    }
+                    
+                    // Reset drawing context
+                    this.ctx.beginPath();
+                    
+                    this.showMessage('🧹 Lavagna pulita!', 'success');
+                }
+            }
+
+            downloadCanvas() {
+                // Create a temporary canvas with white background
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Set same dimensions as original canvas
+                tempCanvas.width = this.canvas.width;
+                tempCanvas.height = this.canvas.height;
+                
+                // Fill with white background
+                tempCtx.fillStyle = 'white';
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Draw the original canvas content on top
+                tempCtx.drawImage(this.canvas, 0, 0);
+                
+                // Convert to JPEG and download
+                try {
+                    const link = document.createElement('a');
+                    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+                    link.download = `lavagna_${timestamp}.jpg`;
+                    link.href = tempCanvas.toDataURL('image/jpeg', 0.9);
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // Show success message
+                    this.showMessage('✅ Immagine scaricata con successo!', 'success');
+                } catch (error) {
+                    console.error('Errore durante il download:', error);
+                    this.showMessage('❌ Errore durante il download', 'error');
+                }
+            }
+
+            showMessage(text, type) {
+                // Create message element
+                const message = document.createElement('div');
+                message.textContent = text;
+                message.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    padding: 15px 25px;
+                    border-radius: 25px;
+                    font-weight: 600;
+                    z-index: 1000;
+                    animation: fadeInOut 3s ease-in-out;
+                    pointer-events: none;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                    backdrop-filter: blur(10px);
+                    ${type === 'success' 
+                        ? 'background: rgba(76, 175, 80, 0.9); color: white;' 
+                        : 'background: rgba(244, 67, 54, 0.9); color: white;'
+                    }
+                `;
+                
+                // Add CSS animation if not already present
+                if (!document.querySelector('#messageAnimation')) {
+                    const style = document.createElement('style');
+                    style.id = 'messageAnimation';
+                    style.textContent = `
+                        @keyframes fadeInOut {
+                            0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                            15%, 85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                document.body.appendChild(message);
+                
+                // Remove message after animation
+                setTimeout(() => {
+                    if (document.body.contains(message)) {
+                        document.body.removeChild(message);
+                    }
+                }, 3000);
+            }
+        }
+
+        // Initialize whiteboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new DigitalWhiteboard();
+        });
+    </script>
+</body>
+</html>
